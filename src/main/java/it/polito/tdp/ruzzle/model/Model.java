@@ -1,5 +1,6 @@
 package it.polito.tdp.ruzzle.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import it.polito.tdp.ruzzle.db.DizionarioDAO;
@@ -46,13 +47,54 @@ public class Model {
 	}
 
 	public List<Pos> trovaParola(String parola) {
-		// TODO Auto-generated method stub
+		for(Pos p : board.getPositions()) {
+			if(board.getCellValueProperty(p).get().charAt(0) == parola.charAt(0)) {
+				List<Pos> percorso = new ArrayList<Pos>();
+				percorso.add(p);
+				if(cerca(parola, 1, percorso)) {
+					return percorso;
+				}
+			}
+		}
+		
 		return null;
 	}
 
+	private boolean cerca(String parola, int livello, List<Pos> percorso) {
+		//caso terminale
+		if(livello == parola.length()) {
+			return true;
+		}
+		//Se non ho terminato la parola prendo l'ultima posizione
+		Pos ultima = percorso.get(percorso.size()-1);
+		//Calcolo le adiacenti
+		List<Pos> adiacenti = board.getAdjacencies(ultima);
+		//Faccio un ciclo delle adiacenti
+		for(Pos p : adiacenti) {
+			//Cerco una posizione non ancora presa nel percorso
+			//E per cui la lettera a cui siamo arrivati nella parola
+			//Sia la stessa di quella nella posizione in esame
+			if(!percorso.contains(p) && parola.charAt(livello) == board.getCellValueProperty(p).get().charAt(0)) {
+				percorso.add(p);
+				if(cerca(parola, livello+1, percorso))
+					return true;
+				percorso.remove(p);
+			}
+		}
+		return false;
+	}
+
 	public List<String> trovaTutte() {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> tutte = new ArrayList<String>();
+		for(String parola : this.dizionario) {
+			parola = parola.toUpperCase();
+			if(parola.length()>1) {
+				if(this.trovaParola(parola) != null) {
+					tutte.add(parola);
+				}
+			}	
+		}
+		return tutte;
 	}
 	
 
